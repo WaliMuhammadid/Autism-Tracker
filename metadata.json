@@ -1,0 +1,6 @@
+{
+  "name": "Autism Care Tracker",
+  "description": "Multi-role therapeutic care tracker and clinical oversight assistant with AI-supported document insights for Autistic development.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
