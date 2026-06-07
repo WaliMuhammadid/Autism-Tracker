@@ -23,6 +23,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentUserName = MutableStateFlow(prefs.getString("current_user_name", "Jane Doe") ?: "Jane Doe")
     val currentUserName: StateFlow<String> = _currentUserName.asStateFlow()
 
+    // === Toast Channel ===
+    private val _toastEvent = MutableSharedFlow<String>()
+    val toastEvent = _toastEvent.asSharedFlow()
+
+    fun showToast(message: String) {
+        viewModelScope.launch {
+            _toastEvent.emit(message)
+        }
+    }
+
     fun switchRole(role: String, userName: String) {
         _currentUserRole.value = role
         _currentUserName.value = userName
@@ -30,6 +40,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             .putString("current_user_role", role)
             .putString("current_user_name", userName)
             .apply()
+        showToast("Session switched: Active as $role ($userName)")
         viewModelScope.launch {
             repository.insertAudit(
                 userName = userName,
@@ -55,7 +66,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     actionType = "VIEW_DATA",
                     details = "Admin selected and viewed deep historical patient dossier for child: ${child?.name ?: "Unknown"}"
                 )
+                child?.let { showToast("Viewing Clinician Dossier for ${it.name}") }
             }
+        } else {
+            showToast("Cleared clinical patient selection")
         }
     }
 
@@ -74,6 +88,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "VIEW_DATA",
                 details = "Owner selected active profile: ${child?.name ?: "Unknown"}"
             )
+            child?.let { showToast("Active tracker profile switched to ${it.name}") }
         }
     }
 
@@ -198,6 +213,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             _selectedChildId.value = newId
             prefs.edit().putInt("selected_child_id", newId).apply()
+            showToast("Created new profile for '$name' successfully!")
         }
     }
 
@@ -210,6 +226,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Updated profile for: ${child.name}"
             )
+            showToast("Profile credentials for '${child.name}' updated!")
         }
     }
 
@@ -245,6 +262,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         authorRole = _currentUserRole.value
                     )
                 )
+                showToast("Logged quantitative metrics and clinical note under '$category'")
             } else {
                 repository.insertAudit(
                     userName = _currentUserName.value,
@@ -252,6 +270,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     actionType = "LOG_DATA",
                     details = "Logged quantitative metric values for Child ID: $childId"
                 )
+                showToast("Successfully logged ${metrics.size} metrics for today!")
             }
         }
     }
@@ -277,6 +296,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Added tracker intervention: $name ($category) for Child ID: $childId. Status: Active"
             )
+            showToast("Tracker intervention '$name' ($category) added successfully!")
         }
     }
 
@@ -291,6 +311,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Toggled intervention '${intervention.name}' status to $newStatus for Child ID: ${intervention.childId}"
             )
+            showToast("Intervention status updated: '${intervention.name}' is now $newStatus")
         }
     }
 
@@ -312,6 +333,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Tip Convert: Saved tip '${tip.title}' as tracked active intervention for Child ID: $childId"
             )
+            showToast("Saved Tip '${tip.title}' as active tracked intervention!")
         }
     }
 
@@ -325,6 +347,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Admin Approved pending local intervention: ${intervention.name} into Shared Master visibility"
             )
+            showToast("Approved & published '${intervention.name}' to clinicians library")
         }
     }
 
@@ -353,6 +376,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 uploaderRole = _currentUserRole.value
             )
             _isAnalyzingReport.value = false
+            showToast("Clinical report '$title' processed & analyzed successfully!")
         }
     }
 
@@ -365,6 +389,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "LOG_DATA",
                 details = "Updated parent settings and log visibility preferences for Child ID: ${pref.childId}"
             )
+            showToast("Roster notification & monitoring settings saved successfully!")
         }
     }
 
@@ -389,6 +414,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "UPDATE_ACCESS",
                 details = "Sent email invitation to $name ($email) as role: $role"
             )
+            showToast("Collaboration invitation sent to $name!")
         }
     }
 
@@ -400,6 +426,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 actionType = "UPDATE_ACCESS",
                 details = "Successfully linked dashboard session using cloud share code: $shareCode"
             )
+            showToast("Successfully linked profile via cloud passcode: $shareCode")
         }
     }
 }

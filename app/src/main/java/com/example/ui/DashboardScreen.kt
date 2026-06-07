@@ -1,11 +1,16 @@
 package com.example.ui
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +27,13 @@ import com.example.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(viewModel: AppViewModel) {
+    val context = LocalContext.current
+    LaunchedEffect(key1 = Unit) {
+        viewModel.toastEvent.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val currentRole by viewModel.currentUserRole.collectAsStateWithLifecycle()
     val userName by viewModel.currentUserName.collectAsStateWithLifecycle()
     val allChildren by viewModel.allChildren.collectAsStateWithLifecycle()
@@ -132,37 +144,67 @@ fun DashboardScreen(viewModel: AppViewModel) {
                     NavigationBarItem(
                         selected = currentTab == 0,
                         onClick = { currentTab = 0 },
-                        icon = { Text("🏡", fontSize = 20.sp) }, // Unicode Emojis ensure bulletproof compilation
-                        label = { Text("Home", maxLines = 1) },
+                        alwaysShowLabel = false,
+                        icon = { 
+                            Icon(
+                                imageVector = if (currentTab == 0) Icons.Rounded.Home else Icons.Outlined.Home,
+                                contentDescription = "Home"
+                            )
+                        },
+                        label = { Text("Home", maxLines = 1, fontSize = 11.sp) },
                         modifier = Modifier.testTag("nav_home")
                     )
                     NavigationBarItem(
                         selected = currentTab == 1,
                         onClick = { currentTab = 1 },
-                        icon = { Text("✏️", fontSize = 20.sp) },
-                        label = { Text("Log Day", maxLines = 1) },
+                        alwaysShowLabel = false,
+                        icon = { 
+                            Icon(
+                                imageVector = if (currentTab == 1) Icons.Rounded.EditCalendar else Icons.Outlined.EditCalendar,
+                                contentDescription = "Log"
+                            )
+                        },
+                        label = { Text("Log", maxLines = 1, fontSize = 11.sp) },
                         modifier = Modifier.testTag("nav_log")
                     )
                     NavigationBarItem(
                         selected = currentTab == 2,
                         onClick = { currentTab = 2 },
-                        icon = { Text("⭐", fontSize = 20.sp) },
-                        label = { Text("Trackers", maxLines = 1) },
+                        alwaysShowLabel = false,
+                        icon = { 
+                            Icon(
+                                imageVector = if (currentTab == 2) Icons.Rounded.Star else Icons.Outlined.Star,
+                                contentDescription = "Trackers"
+                            )
+                        },
+                        label = { Text("Trackers", maxLines = 1, fontSize = 11.sp) },
                         modifier = Modifier.testTag("nav_trackers")
                     )
                     NavigationBarItem(
                         selected = currentTab == 3,
                         onClick = { currentTab = 3 },
-                        icon = { Text("💡", fontSize = 20.sp) },
-                        label = { Text("Tips", maxLines = 1) },
+                        alwaysShowLabel = false,
+                        icon = { 
+                            Icon(
+                                imageVector = if (currentTab == 3) Icons.Rounded.Lightbulb else Icons.Outlined.Lightbulb,
+                                contentDescription = "Tips"
+                            )
+                        },
+                        label = { Text("Tips", maxLines = 1, fontSize = 11.sp) },
                         modifier = Modifier.testTag("nav_tips")
                     )
                     if (currentRole == "Admin") {
                         NavigationBarItem(
                             selected = currentTab == 4,
                             onClick = { currentTab = 4 },
-                            icon = { Text("🔓", fontSize = 20.sp) },
-                            label = { Text("Clinical Portal", maxLines = 1) },
+                            alwaysShowLabel = false,
+                            icon = { 
+                                Icon(
+                                    imageVector = if (currentTab == 4) Icons.Rounded.Lock else Icons.Outlined.Lock,
+                                    contentDescription = "Clinical"
+                                )
+                            },
+                            label = { Text("Clinical", maxLines = 1, fontSize = 11.sp) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = LavenderMedium,
                                 selectedTextColor = LavenderMedium,
@@ -174,8 +216,14 @@ fun DashboardScreen(viewModel: AppViewModel) {
                     NavigationBarItem(
                         selected = currentTab == 5,
                         onClick = { currentTab = 5 },
-                        icon = { Text("⚙️", fontSize = 20.sp) },
-                        label = { Text("Settings", maxLines = 1) },
+                        alwaysShowLabel = false,
+                        icon = { 
+                            Icon(
+                                imageVector = if (currentTab == 5) Icons.Rounded.Settings else Icons.Outlined.Settings,
+                                contentDescription = "Settings"
+                            )
+                        },
+                        label = { Text("Settings", maxLines = 1, fontSize = 11.sp) },
                         modifier = Modifier.testTag("nav_settings")
                     )
                 }
@@ -191,45 +239,96 @@ fun DashboardScreen(viewModel: AppViewModel) {
             ) {
                 NavigationRail(
                     containerColor = MaterialTheme.colorScheme.surface,
+                    header = {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .background(SoftTeal.copy(alpha = 0.12f), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.MedicalServices,
+                                    contentDescription = "Care Portal",
+                                    tint = SoftTeal,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    },
                     modifier = Modifier.testTag("side_nav_rail")
                 ) {
                     NavigationRailItem(
                         selected = currentTab == 0,
                         onClick = { currentTab = 0 },
-                        icon = { Text("🏡", fontSize = 20.sp) },
-                        label = { Text("Home", fontSize = 11.sp) }
+                        icon = {
+                            Icon(
+                                imageVector = if (currentTab == 0) Icons.Rounded.Home else Icons.Outlined.Home,
+                                contentDescription = "Home"
+                            )
+                        },
+                        label = { Text("Home", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     )
                     NavigationRailItem(
                         selected = currentTab == 1,
                         onClick = { currentTab = 1 },
-                        icon = { Text("✏️", fontSize = 20.sp) },
-                        label = { Text("Log Day", fontSize = 11.sp) }
+                        icon = {
+                            Icon(
+                                imageVector = if (currentTab == 1) Icons.Rounded.EditCalendar else Icons.Outlined.EditCalendar,
+                                contentDescription = "Log Day"
+                            )
+                        },
+                        label = { Text("Log Day", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     )
                     NavigationRailItem(
                         selected = currentTab == 2,
                         onClick = { currentTab = 2 },
-                        icon = { Text("⭐", fontSize = 20.sp) },
-                        label = { Text("Trackers", fontSize = 11.sp) }
+                        icon = {
+                            Icon(
+                                imageVector = if (currentTab == 2) Icons.Rounded.Star else Icons.Outlined.Star,
+                                contentDescription = "Trackers"
+                            )
+                        },
+                        label = { Text("Trackers", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     )
                     NavigationRailItem(
                         selected = currentTab == 3,
                         onClick = { currentTab = 3 },
-                        icon = { Text("💡", fontSize = 20.sp) },
-                        label = { Text("Tips", fontSize = 11.sp) }
+                        icon = {
+                            Icon(
+                                imageVector = if (currentTab == 3) Icons.Rounded.Lightbulb else Icons.Outlined.Lightbulb,
+                                contentDescription = "Tips"
+                            )
+                        },
+                        label = { Text("Tips", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     )
                     if (currentRole == "Admin") {
                         NavigationRailItem(
                             selected = currentTab == 4,
                             onClick = { currentTab = 4 },
-                            icon = { Text("🔓", fontSize = 20.sp) },
-                            label = { Text("Clinical", fontSize = 11.sp) }
+                            icon = {
+                                Icon(
+                                    imageVector = if (currentTab == 4) Icons.Rounded.Lock else Icons.Outlined.Lock,
+                                    contentDescription = "Clinical Portal",
+                                    tint = if (currentTab == 4) LavenderMedium else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            label = { Text("Clinical Portal", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                         )
                     }
                     NavigationRailItem(
                         selected = currentTab == 5,
                         onClick = { currentTab = 5 },
-                        icon = { Text("⚙️", fontSize = 20.sp) },
-                        label = { Text("Settings", fontSize = 11.sp) }
+                        icon = {
+                            Icon(
+                                imageVector = if (currentTab == 5) Icons.Rounded.Settings else Icons.Outlined.Settings,
+                                contentDescription = "Settings"
+                            )
+                        },
+                        label = { Text("Settings", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
                     )
                 }
                 Box(

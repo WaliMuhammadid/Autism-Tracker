@@ -380,6 +380,7 @@ fun AdminPortalTab(
                             onClick = {
                                 inputDocTitle = "OT Sensory Tactile Review"
                                 inputDocText = "Patient exhibits tactile sensory defensiveness, speech barries, high motor stimming. Extremely sensitive to vacuum cleaners. Recommends implementing sensory diet, deep message brushing, and First-Then cards."
+                                viewModel.showToast("Loaded Sensory/OT Plan preset")
                             },
                             label = { Text("OT Brushing / Sensory Plan") },
                             shape = RoundedCornerShape(8.dp)
@@ -388,6 +389,7 @@ fun AdminPortalTab(
                             onClick = {
                                 inputDocTitle = "SLP Speech Assessment"
                                 inputDocText = "Maya exhibits expressive language emerging. Highly motivated by AAC visual device routines which should contain core board selections on eating table for request tracking."
+                                viewModel.showToast("Loaded SLP/AAC Device preset")
                             },
                             label = { Text("AAC Speech Device Board") },
                             shape = RoundedCornerShape(8.dp)

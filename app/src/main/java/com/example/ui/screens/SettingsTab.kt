@@ -21,6 +21,12 @@ import com.example.data.*
 import com.example.ui.AppViewModel
 import com.example.ui.CaregiverInvite
 import com.example.ui.theme.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +55,11 @@ fun SettingsTab(
     var inviteName by remember { mutableStateOf("") }
     var inviteEmail by remember { mutableStateOf("") }
     var inviteRole by remember { mutableStateOf("Caregiver") }
+
+    // Admin Password Protection State
+    var showAdminPasswordDialog by remember { mutableStateOf(false) }
+    var passwordInput by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -140,7 +151,11 @@ fun SettingsTab(
                             Text("Therapist", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(
-                            onClick = { viewModel.switchRole("Admin", "Dr. Robert Carter") },
+                            onClick = { 
+                                passwordInput = ""
+                                passwordError = false
+                                showAdminPasswordDialog = true 
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = LavenderMedium),
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -373,12 +388,16 @@ fun SettingsTab(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
                                 Text(
                                     text = "${member.name} (${member.email})",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = "Oversight Access Level: ${member.role}",
@@ -386,6 +405,7 @@ fun SettingsTab(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Box(
                                 modifier = Modifier
                                     .background(
@@ -398,7 +418,8 @@ fun SettingsTab(
                                     text = if (member.isAccepted) "Link Active" else "Pending Approval",
                                     color = if (member.isAccepted) Color(0xFF2E7D32) else Color(0xFFC62828),
                                     fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -441,17 +462,23 @@ fun SettingsTab(
                         )
                     )
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(selected = inviteRole == "Caregiver", onClick = { inviteRole = "Caregiver" })
-                            Text("Caregiver", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            RadioButton(selected = inviteRole == "Therapist", onClick = { inviteRole = "Therapist" })
-                            Text("Therapist", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(selected = inviteRole == "Caregiver", onClick = { inviteRole = "Caregiver" })
+                                Text("Caregiver", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(selected = inviteRole == "Therapist", onClick = { inviteRole = "Therapist" })
+                                Text("Therapist", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
 
                         Button(
@@ -463,10 +490,12 @@ fun SettingsTab(
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = SoftTeal),
-                            modifier = Modifier.testTag("submit_invite_btn"),
-                            shape = RoundedCornerShape(8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("submit_invite_btn"),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Send Invite", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("Send Invite", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -547,5 +576,121 @@ fun SettingsTab(
                 }
             }
         }
+    }
+
+    if (showAdminPasswordDialog) {
+        var passwordVisible by remember { mutableStateOf(false) }
+        AlertDialog(
+            onDismissRequest = { showAdminPasswordDialog = false },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Lock,
+                        contentDescription = "Admin Lock Icon",
+                        tint = LavenderMedium
+                    )
+                    Text(
+                        text = "Clinician Key Access",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF004D40)
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Accessing the Lead Clinician workspace requires authorization. Please enter the master access PIN to switch to Clinician Admin.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    OutlinedTextField(
+                        value = passwordInput,
+                        onValueChange = { 
+                            passwordInput = it
+                            passwordError = false
+                        },
+                        label = { Text("Clinical Access Password") },
+                        placeholder = { Text("Enter admin password") },
+                        isError = passwordError,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("admin_password_input"),
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Rounded.Lock,
+                                contentDescription = null,
+                                tint = if (passwordError) MaterialTheme.colorScheme.error else SoftTeal
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                                    contentDescription = if (passwordVisible) "Toggle Password Visibility" else "Toggle Password Visibility"
+                                )
+                            }
+                        },
+                        supportingText = {
+                            if (passwordError) {
+                                Text(
+                                    text = "Invalid passcode. Please try again.",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            } else {
+                                Text(
+                                    text = "Preset Tip: Use 'admin123' or '1234' for simulated access.",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = LavenderMedium,
+                            focusedLabelColor = LavenderMedium
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val trimmed = passwordInput.trim()
+                        if (trimmed == "admin123" || trimmed == "1234") {
+                            viewModel.switchRole("Admin", "Dr. Robert Carter")
+                            showAdminPasswordDialog = false
+                        } else {
+                            passwordError = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = LavenderMedium),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.testTag("admin_password_confirm_btn")
+                ) {
+                    Text("Verify Credentials", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showAdminPasswordDialog = false },
+                    modifier = Modifier.testTag("admin_password_cancel_btn")
+                ) {
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }

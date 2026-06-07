@@ -142,7 +142,8 @@ fun InterventionsTab(
                                     text = item.name,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
-                                    color = if (isActive) Color(0xFF004D40) else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (isActive) Color(0xFF004D40) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f, fill = false)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 SuggestionChip(
